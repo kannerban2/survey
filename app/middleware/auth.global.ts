@@ -1,0 +1,13 @@
+export default defineNuxtRouteMiddleware((to, from) => {
+    const isLoggedIn = useCookie('auth_token').value
+
+    // ถ้ายังไม่ล็อกอินและไม่ใช่หน้า login
+    if (!isLoggedIn && to.path !== '/login') {
+        return navigateTo('/login')
+    }
+
+    // ถ้าล็อกอินแล้วแต่พยายามเข้า /login → ส่งไปหน้าแรกแทน
+    if (isLoggedIn && to.path === '/login') {
+        return navigateTo('/')
+    }
+})
