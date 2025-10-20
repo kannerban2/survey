@@ -17,9 +17,6 @@ model User {
   username     String  @unique
 }
 
-
-
-
 model CampaingAnswer {
   id          Int       @id @default(autoincrement())
   campaing_id Int?
