@@ -18,3 +18,32 @@ model User {
 }
 
 
+
+
+model CampaingAnswer {
+  id          Int       @id @default(autoincrement())
+  campaing_id Int?
+  theme       String?   @db.VarChar(255)
+  sex         String?   @db.VarChar(255)
+  age         Int?
+  job         String?   @db.VarChar(255)
+  time_user   Int?
+  created_at  DateTime? @default(now())
+  updated_at  DateTime?
+
+  @@map("campaing_answer")
+}
+
+
+model Campaing {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  scope       String?   @db.VarChar(255)
+  status      String?   @db.VarChar(255)
+  link        String?   @db.VarChar(255)
+  created_at  DateTime? @default(now())
+  update_at   DateTime?
+
+  @@map("campaing")
+}
