@@ -9,6 +9,7 @@ export default defineNuxtConfig({
         '@nuxt/scripts',
         '@nuxt/ui',
         '@prisma/nuxt',
+        'nuxt-charts'
 
     ],
     runtimeConfig: {

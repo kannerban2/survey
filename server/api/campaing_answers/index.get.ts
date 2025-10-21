@@ -1,4 +1,5 @@
 import { prisma } from '~/utils/prisma'
+import { Prisma } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -10,22 +11,29 @@ export default defineEventHandler(async (event) => {
   const skip = isNaN(offset) ? 0 : Math.max(offset, 0)
   const hasCid = cid !== undefined && !Number.isNaN(cid)
 
-  if (hasCid) {
+    const whereClause = hasCid ? Prisma.sql`WHERE ca.campaing_id = ${cid}` : Prisma.empty;
+
     const rows = await prisma.$queryRaw<any[]>`
-      SELECT id, campaing_id, theme, sex, age, job, time_user, created_at, updated_at
-      FROM campaing_answer
-      WHERE campaing_id = ${cid}
-      ORDER BY id DESC
-      LIMIT ${take} OFFSET ${skip}
+        SELECT ca.id,
+               ca.campaing_id,
+               c.name  AS campaing_name,
+               ca.theme_id,
+               ct.name AS theme,
+               ca.sex,
+               ca.age,
+               ca.job,
+               ca.time_user,
+               ca.created_at,
+               ca.updated_at
+        FROM campaing_answer AS ca
+                 LEFT JOIN campaing AS c ON ca.campaing_id = c.id
+                 LEFT JOIN campaing_theme AS ct ON ca.theme_id = ct.id
+            ${whereClause}
+        ORDER BY ca.id DESC
+            LIMIT ${take}
+        OFFSET ${skip};
     `
+
     return { data: rows }
-  } else {
-    const rows = await prisma.$queryRaw<any[]>`
-      SELECT id, campaing_id, theme, sex, age, job, time_user, created_at, updated_at
-      FROM campaing_answer
-      ORDER BY id DESC
-      LIMIT ${take} OFFSET ${skip}
-    `
-    return { data: rows }
-  }
+
 })

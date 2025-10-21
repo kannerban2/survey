@@ -4,6 +4,7 @@ import { ref, onMounted } from 'vue'
 interface CampaingAnswer {
   id: number
   campaing_id: number | null
+  campaing_name: string | null
   theme: string | null
   sex: string | null
   age: number | null
@@ -44,6 +45,7 @@ async function fetchAnswers() {
     }
     const res = await $fetch<{ data: CampaingAnswer[] }>(`/api/campaing_answers?${params.toString()}`)
     answers.value = res.data ?? []
+    console.log(res.data)
   } catch (e: unknown) {
     const err = e as { data?: { message?: string }, message?: string }
     error.value = err?.data?.message || err?.message || 'Failed to load'
@@ -118,7 +120,7 @@ onMounted(fetchAnswers)
         </tr>
         <tr v-for="a in answers" :key="a.id">
           <td>{{ a.id }}</td>
-          <td>{{ a.campaing_id }}</td>
+          <td>{{ a.campaing_name }}</td>
           <td>{{ a.theme }}</td>
           <td>{{ a.sex }}</td>
           <td>{{ a.age }}</td>
