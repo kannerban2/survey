@@ -1,5 +1,10 @@
 <script setup lang="ts">
+
 import { ref, reactive, onMounted, nextTick } from 'vue'
+
+definePageMeta({
+  layout: 'none',
+})
 
 // Use default layout
 // If you want a blank page without header/footer, set layout: false
