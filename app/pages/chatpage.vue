@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, reactive, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 
 definePageMeta({
   layout: 'none',
@@ -26,21 +26,28 @@ const selectedLang = ref<'th' | 'en'>(getSavedLang())
 
 const listRef = ref<HTMLDivElement | null>(null)
 
+// Read campaign name from route query
+const route = useRoute()
+const campaignName = computed(() => {
+  const q = route.query?.campaign
+  return q ? String(q) : ''
+})
+
 function getSavedLang(): 'th' | 'en' {
-  const v = (process.client ? localStorage.getItem('chat_lang') : null) as 'th' | 'en' | null
+  const v = (import.meta.client ? localStorage.getItem('chat_lang') : null) as 'th' | 'en' | null
   return v === 'en' ? 'en' : 'th'
 }
 
 function saveLang() {
-  if (process.client) localStorage.setItem('chat_lang', selectedLang.value)
+  if (import.meta.client) localStorage.setItem('chat_lang', selectedLang.value)
 }
 
 function saveConsent(v: boolean) {
-  if (process.client) localStorage.setItem('pdpaAccepted', v ? '1' : '0')
+  if (import.meta.client) localStorage.setItem('pdpaAccepted', v ? '1' : '0')
 }
 
 function restoreConsent(): boolean {
-  if (!process.client) return false
+  if (!import.meta.client) return false
   return localStorage.getItem('pdpaAccepted') === '1'
 }
 
@@ -66,6 +73,12 @@ function acceptPdpa() {
   pdpaAccepted.value = true
   saveConsent(true)
   addMessage({ role: 'system', type: 'text', content: selectedLang.value === 'en' ? 'You accepted PDPA. You can start chatting now.' : 'คุณได้ยินยอม PDPA แล้ว สามารถเริ่มสนทนาได้' })
+  if (campaignName.value) {
+    const text = selectedLang.value === 'en'
+      ? `Starting chat for campaign: ${campaignName.value}`
+      : `เริ่มแชทสำหรับแคมเปญ: ${campaignName.value}`
+    addMessage({ role: 'system', type: 'text', content: text })
+  }
 }
 
 function declinePdpa() {
@@ -105,6 +118,12 @@ onMounted(() => {
     showPdpaCard()
   } else {
     addMessage({ role: 'ai', type: 'text', content: selectedLang.value === 'en' ? 'How can I help you today?' : 'มีอะไรให้ช่วยไหมวันนี้' })
+    if (campaignName.value) {
+      const text = selectedLang.value === 'en'
+        ? `Continuing chat for campaign: ${campaignName.value}`
+        : `กำลังสนทนาสำหรับแคมเปญ: ${campaignName.value}`
+      addMessage({ role: 'system', type: 'text', content: text })
+    }
   }
   nextTick(() => scrollToBottom())
 })

@@ -35,9 +35,29 @@
             <a v-if="c.link" :href="c.link" target="_blank" rel="noopener">Open</a>
           </td>
           <td>{{ formatDate(c.created_at) }}</td>
-          <td>
-            <button class="btn" @click="openEdit(c)">Edit</button>
-            <button class="btn danger" @click="confirmDelete(c)">Delete</button>
+          <td class="actions-cell">
+            <button class="icon-btn gray" type="button" @click="openEdit(c)" title="แก้ไข" aria-label="แก้ไข">
+              <i class="bx bx-pencil"></i>
+            </button>
+            <button class="icon-btn red" type="button" @click="confirmDelete(c)" title="ลบ" aria-label="ลบ">
+              <i class="bx bx-trash"></i>
+            </button>
+            <NuxtLink
+              class="icon-btn primary"
+              :to="{ path: '/chatpage', query: { campaign: c.name ?? '' } }"
+              title="ไปหน้าแชท"
+              aria-label="ไปหน้าแชท"
+            >
+              <i class="bx bx-chat"></i>
+            </NuxtLink>
+            <NuxtLink
+                class="icon-btn primary"
+                :to="{ path: `/report/${c.id}`, query: { campaign: c.name ?? '' } }"
+                title="ไปหน้ารายงาน"
+                aria-label="ไปหน้ารายงาน"
+            >
+              <i class='bx bx-chart'></i>
+            </NuxtLink>
           </td>
         </tr>
       </tbody>
@@ -227,5 +247,15 @@ onMounted(fetchCampaigns)
 .form-row label { font-weight: 600; margin-bottom: 4px; }
 .form-row input { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
 .actions { display:flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+/* Compact inline actions in table cells to prevent overlap */
+.actions-cell { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Small square icon buttons (Boxicons) */
+.icon-btn { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; color: #374151; cursor: pointer; text-decoration: none; }
+.icon-btn:hover { background: #f3f4f6; }
+.icon-btn i { font-size: 16px; line-height: 1; }
+.icon-btn.primary { border-color: #2563eb; color: #2563eb; background: #eef2ff; }
+.icon-btn.red { border-color: #ef4444; color: #ef4444; background: #fff5f5; }
+.icon-btn.gray { color: #374151; }
 </style>
 

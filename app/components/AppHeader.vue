@@ -29,8 +29,8 @@ function logout() {
         <nav class="nav" :class="{ open: menuOpen }">
           <NuxtLink to="/" class="link" :class="{ active: isActive('/') }">Campaigns</NuxtLink>
           <NuxtLink to="/campaingreport" class="link" :class="{ active: isActive('/campaingreport') }">Answers</NuxtLink>
-          <NuxtLink to="/chatpage" class="link" :class="{ active: isActive('/chatpage') }">Chat</NuxtLink>
-          <NuxtLink to="/report" class="link" :class="{ active: isActive('/report') }">Report</NuxtLink>
+<!--          <NuxtLink to="/chatpage" class="link" :class="{ active: isActive('/chatpage') }">Chat</NuxtLink>-->
+<!--          <NuxtLink to="/app/pages/reportsum" class="link" :class="{ active: isActive('/report') }">Report</NuxtLink>-->
         </nav>
       </div>
       <div class="right">
