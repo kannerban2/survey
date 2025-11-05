@@ -26,12 +26,42 @@ const selectedLang = ref<'th' | 'en'>(getSavedLang())
 
 const listRef = ref<HTMLDivElement | null>(null)
 
-// Read campaign name from route query
+// Read campaign info from route query
 const route = useRoute()
 const campaignName = computed(() => {
   const q = route.query?.campaign
   return q ? String(q) : ''
 })
+const campaignScope = computed(() => {
+  const q = route.query?.scope
+  return q ? String(q) : ''
+})
+const campaignId = computed<number | null>(() => {
+  const q = route.query?.campaignId
+  const id = q != null ? Number(q) : NaN
+  return Number.isFinite(id) ? id : null
+})
+
+function buildScopeInstruction(): string {
+  const name = campaignName.value || (selectedLang.value === 'en' ? 'Unnamed campaign' : 'แคมเปญไม่มีชื่อ')
+  const scope = campaignScope.value || (selectedLang.value === 'en' ? 'No specific scope was provided' : 'ไม่ได้ระบุขอบเขต')
+  const idText = campaignId.value != null ? ` (ID: ${campaignId.value})` : ''
+  if (selectedLang.value === 'en') {
+    return [
+      `You are an assistant for the campaign "${name}"${idText}.`,
+      `Chat scope: ${scope}.`,
+      'Answer strictly within this scope. If the user asks about anything outside this scope, politely refuse and guide them back to the campaign topics.',
+      'Be concise and helpful.'
+    ].join('\n')
+  } else {
+    return [
+      `คุณเป็นผู้ช่วยสำหรับแคมเปญ "${name}"${idText}`,
+      `ขอบเขตการสนทนา: ${scope}`,
+      'ตอบเฉพาะประเด็นที่อยู่ในขอบเขตนี้เท่านั้น หากผู้ใช้ถามเรื่องที่อยู่นอกขอบเขต ให้ปฏิเสธอย่างสุภาพและแนะนำให้กลับเข้าสู่หัวข้อของแคมเปญ',
+      'ตอบแบบกระชับและเป็นประโยชน์'
+    ].join('\n')
+  }
+}
 
 function getSavedLang(): 'th' | 'en' {
   const v = (import.meta.client ? localStorage.getItem('chat_lang') : null) as 'th' | 'en' | null
@@ -79,6 +109,17 @@ function acceptPdpa() {
       : `เริ่มแชทสำหรับแคมเปญ: ${campaignName.value}`
     addMessage({ role: 'system', type: 'text', content: text })
   }
+  if (campaignScope.value) {
+    const scopeText = selectedLang.value === 'en'
+      ? `Chat scope is restricted to: ${campaignScope.value}`
+      : `ขอบเขตการสนทนาถูกจำกัดไว้ที่: ${campaignScope.value}`
+    addMessage({ role: 'system', type: 'text', content: scopeText })
+  } else {
+    const scopeText = selectedLang.value === 'en'
+      ? 'No specific scope provided. I will answer only about the campaign itself.'
+      : 'ไม่ได้ระบุขอบเขตเพิ่มเติม ฉันจะตอบในเรื่องของแคมเปญนี้เท่านั้น'
+    addMessage({ role: 'system', type: 'text', content: scopeText })
+  }
 }
 
 function declinePdpa() {
@@ -95,15 +136,42 @@ async function sendMessage() {
   addMessage({ role: 'user', type: 'text', content: text })
   input.value = ''
 
-  // Mock AI reply after a short delay
-  setTimeout(() => {
-    const reply = selectedLang.value === 'en'
-      ? "This is a sample AI reply for demo purposes."
-      : "นี่คือข้อความตอบกลับตัวอย่างจาก AI เพื่อสาธิตการทำงาน"
+  try {
+    // 🔹 เรียก Gemini API พร้อมคำสั่งระบบจำกัดขอบเขตแคมเปญ
+    const systemInstruction = buildScopeInstruction()
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': 'AIzaSyBs4zrJ2z1bMsHUU3CayTHEs68SOnTsVpw', // << API Key ตรงนี้
+      },
+      body: JSON.stringify({
+        system_instruction: {
+          parts: [{ text: systemInstruction }]
+        },
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text }]
+          }
+        ]
+      }),
+    })
+
+    const data = await res.json()
+
+
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '⚠️ ไม่มีข้อความตอบกลับจาก AI'
+
     addMessage({ role: 'ai', type: 'text', content: reply })
+  } catch (err) {
+    console.error(err)
+    addMessage({ role: 'ai', type: 'text', content: '❌ เกิดข้อผิดพลาดในการเชื่อมต่อ API' })
+  } finally {
     sending.value = false
-  }, 600)
+  }
 }
+
 
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -123,6 +191,17 @@ onMounted(() => {
         ? `Continuing chat for campaign: ${campaignName.value}`
         : `กำลังสนทนาสำหรับแคมเปญ: ${campaignName.value}`
       addMessage({ role: 'system', type: 'text', content: text })
+    }
+    if (campaignScope.value) {
+      const scopeText = selectedLang.value === 'en'
+        ? `Chat scope is restricted to: ${campaignScope.value}`
+        : `ขอบเขตการสนทนาถูกจำกัดไว้ที่: ${campaignScope.value}`
+      addMessage({ role: 'system', type: 'text', content: scopeText })
+    } else {
+      const scopeText = selectedLang.value === 'en'
+        ? 'No specific scope provided. I will answer only about the campaign itself.'
+        : 'ไม่ได้ระบุขอบเขตเพิ่มเติม ฉันจะตอบในเรื่องของแคมเปญนี้เท่านั้น'
+      addMessage({ role: 'system', type: 'text', content: scopeText })
     }
   }
   nextTick(() => scrollToBottom())

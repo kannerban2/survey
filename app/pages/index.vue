@@ -1,8 +1,8 @@
 <template>
   <div class="page">
     <div class="toolbar">
-      <h1>Campaigns</h1>
-      <button class="btn primary" @click="openCreate()">+ Create Campaign</button>
+      <h1>แคมเปญทั้งหมด</h1>
+      <button class="btn primary" @click="openCreate()">+ สร้างแคมเปญ</button>
     </div>
 
     <div v-if="loading" class="info">Loading...</div>
@@ -44,7 +44,7 @@
             </button>
             <NuxtLink
               class="icon-btn primary"
-              :to="{ path: '/chatpage', query: { campaign: c.name ?? '' } }"
+              :to="{ path: '/chatpage', query: { campaign: c.name ?? '', scope: c.scope ?? '', campaignId: c.id } }"
               title="ไปหน้าแชท"
               aria-label="ไปหน้าแชท"
             >
