@@ -143,7 +143,7 @@ async function sendMessage() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-goog-api-key': 'AIzaSyBs4zrJ2z1bMsHUU3CayTHEs68SOnTsVpw', // << API Key ตรงนี้
+        'X-goog-api-key': 'AIzaSyBs4zrJ2z1bMsHUU3CayTHEs68SOnTsVpw', // << API Key
       },
       body: JSON.stringify({
         system_instruction: {
